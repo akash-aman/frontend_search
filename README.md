@@ -7,6 +7,7 @@
 - Implemented 3 async function :
     - `fetchRawData`  : For fetching json data single time after page load.
         - can be called on hovering search bar, I have dispatched this action on page load.
+        - by compressing from brotli we can further reduce network payload size.
     - `indexingRawData` : Create Indexing and keeping reference of `IndexedData` .
         - We should not create reference multiple time. As we need indexing of data only one time and utilising that for every query.
     - `setSearchResults` : Dispatching input search query and setting result in state. Further using that state to show result.
