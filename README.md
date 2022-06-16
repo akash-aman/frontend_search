@@ -2,7 +2,7 @@
 
 - This app fetch json data only one time on page load and make search index for your data.
 
-## **Code for Search Login**
+## **Code for Search Logic**
 
 - Implemented 3 async function :
     - `fetchRawData`  : For fetching json data single time after page load.
