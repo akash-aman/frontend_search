@@ -1,6 +1,6 @@
 import React from 'react'
 import { useEffect } from 'react'
-import { setSearchResults, getSearchResult } from '../state/searchSlice'
+import { setSearchResults, getSearchResult, fetchRawData } from '../state/searchSlice'
 import { useDispatch, useSelector } from 'react-redux'
 
 
@@ -17,6 +17,7 @@ export default function Home() {
       onChange={(e) => {
         dispatch(setSearchResults(`${e.target.value}`))
       }}
+      onMouseOver={() => (dispatch(fetchRawData()))}
     />
       <ul>
         {

@@ -29,10 +29,18 @@ var indexedData = null
 //------------------------------------------------------------------------------
 export const fetchRawData = createAsyncThunk('search/fetchRawData', async (_, thunkAPI) => {
 
+    // ---------------------------------------------------------
+    // If already hover on search field, don't fetch data again
+    // ---------------------------------------------------------
+    
+    if (thunkAPI.getState().search.rawData != null) {
+        return
+    }
+    
     // ----------------------------
     // fetch your data here
     // ----------------------------
-    //setTimeout(() => (console.log("1")), 1000)
+
     const data = await axios.get("https://raw.githubusercontent.com/akash-aman/json/main/search.json");
 
 
