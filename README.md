@@ -4,7 +4,7 @@
 
 ## **Code for Search Logic**
 
-- Implemented 3 async function :
+- **Implemented 3 async function:**
     - `fetchRawData`  : For fetching json data single time after page load.
         - can be called on page load, I have dispatched this action on hovering search bar.
         - by compressing from brotli we can further reduce network payload size.
@@ -12,6 +12,8 @@
         - We should not create reference multiple time. As we need indexing of data only one time and utilising that for every query.
     - `setSearchResults` : Dispatching input search query and setting result in state. Further using that state to show result.
 - Setup your redux store and you are ready to go 😊. Use, Modify, & be creative ✌️.
+
+## Reference of code for above understanding
 
 ```jsx
 
@@ -178,7 +180,28 @@
 
 ```
 
-# Images
+## How to run 
+
+- Installing pnpm 
+```
+    npm install -g pnpm
+```
+- Installing pnpm dependencies
+```
+    pnpm install 
+```
+- Run in Development Mode  
+```
+    pnpm run dev
+```
+- Run in Production Mode 
+```
+    pnpm run build
+    pnpm run start
+```
+
+
+## Images
 
 ![Untitled](https://raw.githubusercontent.com/akash-aman/frontend_search/main/images/search_1.png)
 
