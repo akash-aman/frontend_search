@@ -4,13 +4,6 @@
 // Not even algolia. 😂
 // -------------------------------------------------------------------------------
 
-// -------------------------------------------------------------------------------
-//  
-//
-// ------------------------------------------------------------------------------- 
-
-
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { Fzf } from 'fzf'
 import axios from "axios";
@@ -20,28 +13,31 @@ const initialState = {
     rawData: null,
     searchField: "", //"title" | "url"
     searchQuery: "",
-    result: null,
+    searchResult: null,
     status: 'idle', //'idle' | 'loading' | 'succeeded' | 'failed'
     error: null
 }
 
 var indexedData = null
+const GET_URL = "https://raw.githubusercontent.com/akash-aman/json/main/search.json"
+
+
 //------------------------------------------------------------------------------
 export const fetchRawData = createAsyncThunk('search/fetchRawData', async (_, thunkAPI) => {
 
     // ---------------------------------------------------------
     // If already hover on search field, don't fetch data again
     // ---------------------------------------------------------
-    
+
     if (thunkAPI.getState().search.rawData != null) {
         return
     }
-    
+
     // ----------------------------
     // fetch your data here
     // ----------------------------
 
-    const data = await axios.get("https://raw.githubusercontent.com/akash-aman/json/main/search.json");
+    const data = await axios.get(GET_URL);
 
 
     const formattedData = await data.data.map(({ title, url }) => ({
@@ -55,6 +51,7 @@ export const fetchRawData = createAsyncThunk('search/fetchRawData', async (_, th
 
     thunkAPI.dispatch(setRawData(formattedData))
     thunkAPI.dispatch(indexingRawData("title"))
+
 })
 
 
@@ -87,8 +84,8 @@ export const indexingRawData = createAsyncThunk('search/indexingRawData', async 
     if (thunkAPI.getState().search.searchQuery === "") {
         return null
     } else {
-        console.log();
-        return await JSON.parse(JSON.stringify(indexedData.find(thunkAPI.getState().search.searchQuery)))
+        const existedQuery = thunkAPI.getState().search.searchQuery
+        return await JSON.parse(JSON.stringify(indexedData.find(existedQuery)))
     }
 
 })
@@ -136,13 +133,13 @@ const searchSlice = createSlice({
                 state.status = "failed"
             })
             .addCase(setSearchResults.fulfilled, (state, action) => {
-                state.result = action.payload
+                state.searchResult = action.payload
             })
             .addCase(indexingRawData.fulfilled, (state, action) => {
                 //----------------------------------------
                 // check log for indexing Completed or not
                 //----------------------------------------
-                state.result = action.payload
+                state.searchResult = action.payload
                 console.log("Indexing Completed")
             })
             .addCase(indexingRawData.rejected, (state, action) => {
@@ -156,7 +153,8 @@ const searchSlice = createSlice({
 
 
 
-export const getSearchResult = (state) => state.search.result;
+export const getSearchResult = (state) => state.search.searchResult;
+export const getRawDataStatus = (state) => !state.search.rawData ? true : false;
 export const { setRawData, setSearchField, setSearchQuery } = searchSlice.actions
 
 export default searchSlice.reducer 

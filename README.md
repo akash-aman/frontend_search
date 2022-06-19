@@ -14,7 +14,8 @@
 - Setup your redux store and you are ready to go 😊. Use, Modify, & be creative ✌️.
 
 ```jsx
-// -------------------------------------------------------------------------------
+
+    // -------------------------------------------------------------------------------
     // I got inspired 🤓 from MDN docs search implementation, its literally unique ❤️,
     // As it is implemented locally on client side. No elastic search nothing.
     // Not even algolia. 😂
@@ -28,19 +29,33 @@
     const initialState = {
         rawData: null,
         searchField: "", //"title" | "url"
-        result: null,
+        searchQuery: "",
+        searchResult: null,
         status: 'idle', //'idle' | 'loading' | 'succeeded' | 'failed'
         error: null
     }
 
     var indexedData = null
+    const GET_URL = "https://raw.githubusercontent.com/akash-aman/json/main/search.json"
+
+
     //------------------------------------------------------------------------------
     export const fetchRawData = createAsyncThunk('search/fetchRawData', async (_, thunkAPI) => {
+
+        // ---------------------------------------------------------
+        // If already hover on search field, don't fetch data again
+        // ---------------------------------------------------------
+
+        if (thunkAPI.getState().search.rawData != null) {
+            return
+        }
 
         // ----------------------------
         // fetch your data here
         // ----------------------------
-        const data = await axios.get("https://raw.githubusercontent.com/akash-aman/json/main/search.json");
+
+        const data = await axios.get(GET_URL);
+
 
         const formattedData = await data.data.map(({ title, url }) => ({
             title,
@@ -53,14 +68,16 @@
 
         thunkAPI.dispatch(setRawData(formattedData))
         thunkAPI.dispatch(indexingRawData("title"))
+
     })
+
 
     export const indexingRawData = createAsyncThunk('search/indexingRawData', async (value, thunkAPI) => {
         // ----------------------------------------------------------
         // setting field to be searched
         // this function need to be called to change searchField
         //-----------------------------------------------------------
-        thunkAPI.dispatch(setSearchType(value))
+        thunkAPI.dispatch(setSearchField(value))
 
         const indexing = new Fzf(thunkAPI.getState().search.rawData, {
             limit: 75,
@@ -77,6 +94,17 @@
         })
 
         indexedData = indexing
+
+        //------------------------------------------------------------------------------
+        // For already typed text, search for it
+        //------------------------------------------------------------------------------
+        if (thunkAPI.getState().search.searchQuery === "") {
+            return null
+        } else {
+            const existedQuery = thunkAPI.getState().search.searchQuery
+            return await JSON.parse(JSON.stringify(indexedData.find(existedQuery)))
+        }
+
     })
 
     //------------------------------------------------------------------------------
@@ -84,14 +112,17 @@
     //------------------------------------------------------------------------------
     export const setSearchResults = createAsyncThunk('search/getSearchResults', async (value, thunkAPI) => {
 
+        thunkAPI.dispatch(setSearchQuery(value))
+
         if (thunkAPI.getState().search.status == "succeeded") {
             if (value === '') {
                 return null
             }
             return await JSON.parse(JSON.stringify(indexedData.find(value)))
         }
-
     })
+
+
 
     const searchSlice = createSlice({
         name: 'search',
@@ -100,8 +131,11 @@
             setRawData: (state, action) => {
                 state.rawData = action.payload
             },
-            setSearchType: (state, action) => {
+            setSearchField: (state, action) => {
                 state.searchField = action.payload
+            },
+            setSearchQuery: (state, action) => {
+                state.searchQuery = action.payload
             }
         },
         extraReducers(builder) {
@@ -116,12 +150,13 @@
                     state.status = "failed"
                 })
                 .addCase(setSearchResults.fulfilled, (state, action) => {
-                    state.result = action.payload
+                    state.searchResult = action.payload
                 })
                 .addCase(indexingRawData.fulfilled, (state, action) => {
                     //----------------------------------------
                     // check log for indexing Completed or not
                     //----------------------------------------
+                    state.searchResult = action.payload
                     console.log("Indexing Completed")
                 })
                 .addCase(indexingRawData.rejected, (state, action) => {
@@ -133,10 +168,14 @@
         }
     })
 
-    export const getSearchResult = (state) => state.search.result;
-    export const { setRawData, setSearchType } = searchSlice.actions
 
-    export default searchSlice.reducer
+
+    export const getSearchResult = (state) => state.search.searchResult;
+    export const getRawDataStatus = (state) => !state.search.rawData ? true : false;
+    export const { setRawData, setSearchField, setSearchQuery } = searchSlice.actions
+
+    export default searchSlice.reducer 
+
 ```
 
 # Images
